@@ -54,6 +54,7 @@ CivicLens AI Web Application
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
+   > 🔑 Get a **free** API key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 
 3. **Run Locally**:
    ```bash
@@ -68,11 +69,37 @@ CivicLens AI Web Application
 
 ---
 
+## ☁️ Deploy to Vercel (Free, One-Click)
+
+> Deploy this app live so it works from **any browser, any device** — not just your local machine.
+
+### Steps:
+
+1. Go to **[vercel.com](https://vercel.com)** → Sign in with GitHub
+2. Click **"Add New Project"** → Import `Civiclens-ai-government-services`
+3. In the **Environment Variables** section, add:
+
+   | Variable Name | Value |
+   |---|---|
+   | `GEMINI_API_KEY` | `your_actual_gemini_api_key` |
+
+4. Click **Deploy** ✅
+
+Vercel will give you a live URL like:
+```
+https://civiclens-ai-government-services.vercel.app
+```
+
+> ⚠️ **Never** paste your real API key into the code or `.env.example`. Always use Vercel's Environment Variables settings panel.
+
+---
+
 ## 🛡️ Security & Privacy Architecture
 
 - **Zero Client Key Leakage**: API requests are routed through Next.js server-side route `/api/chat` using private `GEMINI_API_KEY`.
 - **Security Headers**: Configured with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Strict-Transport-Security`.
 - **Input Sanitization**: HTML/script sanitization and sliding-window rate limiting (30 requests/min/IP).
+- **API Key Safety**: `.env.local` is gitignored — your key never reaches GitHub.
 
 ---
 
