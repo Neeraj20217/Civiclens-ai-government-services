@@ -102,7 +102,7 @@ RULES:
     }
   ];
 
-  const modelsToTry = ['gemini-flash-latest', 'gemini-2.0-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-pro'];
+  const modelsToTry = ['gemini-flash-latest', 'gemini-3.5-flash'];
 
   for (const model of modelsToTry) {
     try {
