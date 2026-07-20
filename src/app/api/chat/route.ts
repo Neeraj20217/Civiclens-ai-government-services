@@ -85,42 +85,50 @@ RULES:
     let lastError: string | null = null;
 
     for (const model of modelsToTry) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: formattedContents,
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 1500,
-            },
-          }),
-          signal: controller.signal,
-        });
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              contents: formattedContents,
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 1500,
+              },
+            }),
+            signal: controller.signal,
+          });
 
-        clearTimeout(timeoutId);
+          clearTimeout(timeoutId);
 
-        if (res.ok) {
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            responseData = text;
-            break;
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              responseData = text;
+              break;
+            }
+          } else {
+            const errText = await res.text();
+            lastError = `Model ${model} returned ${res.status}: ${errText}`;
+            if ((res.status === 429 || res.status === 503) && attempt === 0) {
+              await new Promise((r) => setTimeout(r, 1200));
+              continue;
+            }
           }
-        } else {
-          const errText = await res.text();
-          lastError = `Model ${model} returned ${res.status}: ${errText}`;
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          lastError = `Model ${model} fetch failed: ${message}`;
         }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        lastError = `Model ${model} fetch failed: ${message}`;
+        break;
       }
+      if (responseData) break;
     }
 
     if (responseData) {
